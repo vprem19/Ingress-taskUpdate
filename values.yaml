@@ -1,0 +1,108 @@
+name: kewm
+replicas: <+serviceVariables.replicas>
+
+datacenter: <+env.variables.datacenter>            # rch2-cdc-ax-np, rch2-hdc-ax-np, rch2-cdc-p, rch2-hdc-p
+environment: <+env.variables.environment>          # prod, kewm-dev, kewm-test, etc
+
+image: <+artifact.image>
+dockercfg: <+artifact.imagePullSecret>
+
+createNamespace: true
+namespace: <+infra.namespace>
+
+projectId: <+env.variables.rancherProjectID>
+
+# Service Type allow you to specify what kind of service you want.
+# Possible values for ServiceType are:
+# ClusterIP | NodePort | LoadBalancer | ExternalName
+serviceType: ClusterIP
+
+# A Service can map an incoming port to any targetPort.
+# targetPort is where application is listening on inside the container.
+servicePort: 80
+serviceTargetPort: 8080
+
+serverAlias: <+serviceVariables.serviceName><+env.variables.environment>.<+env.variables.vanitySuffix>
+
+ingress:
+  secret: <+env.variables.ingressSecret>
+
+  aliases:
+    prod: "kewm.kroger.com,kewm.cloudha.kroger.com"
+
+    kewm-dev:   "kewm-dev.kewm.{{ .Values.datacenter }}.kroger.com"
+    kewm-stage: "kewm-stage.kewm.{{ .Values.datacenter }}.kroger.com"
+    kewm-test:  "kewm-test.kewm.{{ .Values.datacenter }}.kroger.com"
+    kewm-perf:  "kewm-perf.kewm.{{ .Values.datacenter }}.kroger.com"
+
+  hosts:
+    # PROD — supports RKE1 (rch-cdc-axprod) and NEW RKE2 (rch2-cdc-p)
+    prod:
+      - kewm.kroger.com
+      - kewm.kewm.{{ .Values.datacenter }}.kroger.com
+
+    kewm-dev:
+      - kewm-dev.kewm.{{ .Values.datacenter }}.kroger.com
+
+    kewm-stage:
+      - kewm-stage.kewm.{{ .Values.datacenter }}.kroger.com
+
+    kewm-test:
+      - kewm-test.kewm.{{ .Values.datacenter }}.kroger.com
+
+    kewm-perf:
+      - kewm-perf.kewm.{{ .Values.datacenter }}.kroger.com
+
+certs:
+  commonName:
+    prod: "kewm.kroger.com"
+
+    kewm-dev:   "kewm-dev.kewm.{{ .Values.datacenter }}.kroger.com"
+    kewm-stage: "kewm-stage.kewm.{{ .Values.datacenter }}.kroger.com"
+    kewm-test:  "kewm-test.kewm.{{ .Values.datacenter }}.kroger.com"
+    kewm-perf:  "kewm-perf.kewm.{{ .Values.datacenter }}.kroger.com"
+
+  dnsNames:
+    prod:
+      - "kewm.kroger.com"
+      - "kewm.cloudha.kroger.com"
+      - "kewm.kewm.{{ .Values.datacenter }}.kroger.com"
+
+    kewm-dev:
+      - "kewm-dev.kewm.{{ .Values.datacenter }}.kroger.com"
+      - "*.kewm.{{ .Values.datacenter }}.kroger.com"
+
+    kewm-stage:
+      - "kewm-stage.kewm.{{ .Values.datacenter }}.kroger.com"
+      - "*.kewm.{{ .Values.datacenter }}.kroger.com"
+
+    kewm-test:
+      - "kewm-test.kewm.{{ .Values.datacenter }}.kroger.com"
+      - "*.kewm.{{ .Values.datacenter }}.kroger.com"
+
+    kewm-perf:
+      - "kewm-perf.kewm.{{ .Values.datacenter }}.kroger.com"
+      - "*.kewm.{{ .Values.datacenter }}.kroger.com"
+
+deployment:
+  httpPort: 8080
+  startupProbe:
+    endpoint: /manage/health
+    initialDelaySeconds: 5
+    timeoutSeconds: 5
+    periodSeconds: 10
+    failureThreshold: 6
+  readinessProbe:
+    endpoint: /manage/health
+    initialDelaySeconds: 5
+    timeoutSeconds: 5
+    periodSeconds: 10
+    failureThreshold: 6
+  resources:
+    limits:
+      cpu: .5
+      memory: 3Gi
+    requests:
+      cpu: .5
+      memory: 3Gi
+  terminationGracePeriodSeconds: 60  # this is the length of time before SIGKILL is sent
