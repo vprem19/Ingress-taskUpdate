@@ -17,16 +17,21 @@ metadata:
 spec:
   tls:
   - hosts:
-      - {{ tpl .Values.ingress.hostTemplate . }}
-    secretName: {{.Values.ingress.secret}}
+      {{- range .Values.ingress.hostsTemplate }}
+      - {{ tpl . $ }}
+      {{- end }}
+    secretName: {{ .Values.ingress.secret }}
+
   rules:
-  - host: {{ tpl .Values.ingress.hostTemplate . }}   
+  {{- range .Values.ingress.hostsTemplate }}
+  - host: {{ tpl . $ }}
     http:
       paths:
       - path: /
         pathType: ImplementationSpecific
         backend:
           service:
-            name: svc-{{ .Values.name }}
+            name: svc-{{ $.Values.name }}
             port:
-              number: {{ .Values.servicePort }}
+              number: {{ $.Values.servicePort }}
+  {{- end }}
