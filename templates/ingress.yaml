@@ -13,25 +13,20 @@ metadata:
     nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
     nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
     namespace: {{ .Values.namespace }}
-    nginx.ingress.kubernetes.io/server-alias: "{{ tpl (index .Values.ingress.aliases .Values.environment) . }}"
+
 spec:
   tls:
-    - hosts:
-        {{- range (index .Values.ingress.hosts .Values.environment) }}
-        - {{ tpl . $ }}
-        {{- end }}
-      secretName: {{ .Values.ingress.secret }}
-
+  - hosts:
+      - {{ tpl .Values.ingress.hostTemplate . }}
+    secretName: {{.Values.ingress.secret}}
   rules:
-    {{- range (index .Values.ingress.hosts .Values.environment) }}
-    - host: {{ tpl . $ }}
-      http:
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: svc-{{ $.Values.name }}
-                port:
-                  number: {{ $.Values.servicePort }}
-    {{- end }}
+  - host: {{ tpl .Values.ingress.hostTemplate . }}   
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: svc-{{ .Values.name }}
+            port:
+              number: {{ .Values.servicePort }}
