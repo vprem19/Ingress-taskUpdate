@@ -1,8 +1,8 @@
 name: kewm
 replicas: <+serviceVariables.replicas>
 
-datacenter: <+env.variables.datacenter>            # rch2-cdc-ax-np, rch2-hdc-ax-np, rch2-cdc-p, rch2-hdc-p
-environment: <+env.variables.environment>          # prod, kewm-dev, kewm-test, etc
+datacenter: <+env.variables.datacenter>
+environment: <+env.variables.environment>
 
 image: <+artifact.image>
 dockercfg: <+artifact.imagePullSecret>
@@ -25,64 +25,8 @@ serviceTargetPort: 8080
 serverAlias: <+serviceVariables.serviceName><+env.variables.environment>.<+env.variables.vanitySuffix>
 
 ingress:
+  hostTemplate: "{{ .Values.name }}-{{ .Values.environment }}.{{ .Values.ingressSuffix }}"
   secret: <+env.variables.ingressSecret>
-
-  aliases:
-    prod: "kewm.kroger.com,kewm.cloudha.kroger.com"
-
-    kewm-dev:   "kewm-dev.kewm.{{ .Values.datacenter }}.kroger.com"
-    kewm-stage: "kewm-stage.kewm.{{ .Values.datacenter }}.kroger.com"
-    kewm-test:  "kewm-test.kewm.{{ .Values.datacenter }}.kroger.com"
-    kewm-perf:  "kewm-perf.kewm.{{ .Values.datacenter }}.kroger.com"
-
-  hosts:
-    # PROD — supports RKE1 (rch-cdc-axprod) and NEW RKE2 (rch2-cdc-p)
-    prod:
-      - kewm.kroger.com
-      - kewm.kewm.{{ .Values.datacenter }}.kroger.com
-
-    kewm-dev:
-      - kewm-dev.kewm.{{ .Values.datacenter }}.kroger.com
-
-    kewm-stage:
-      - kewm-stage.kewm.{{ .Values.datacenter }}.kroger.com
-
-    kewm-test:
-      - kewm-test.kewm.{{ .Values.datacenter }}.kroger.com
-
-    kewm-perf:
-      - kewm-perf.kewm.{{ .Values.datacenter }}.kroger.com
-
-certs:
-  commonName:
-    prod: "kewm.kroger.com"
-
-    kewm-dev:   "kewm-dev.kewm.{{ .Values.datacenter }}.kroger.com"
-    kewm-stage: "kewm-stage.kewm.{{ .Values.datacenter }}.kroger.com"
-    kewm-test:  "kewm-test.kewm.{{ .Values.datacenter }}.kroger.com"
-    kewm-perf:  "kewm-perf.kewm.{{ .Values.datacenter }}.kroger.com"
-
-  dnsNames:
-    prod:
-      - "kewm.kroger.com"
-      - "kewm.cloudha.kroger.com"
-      - "kewm.kewm.{{ .Values.datacenter }}.kroger.com"
-
-    kewm-dev:
-      - "kewm-dev.kewm.{{ .Values.datacenter }}.kroger.com"
-      - "*.kewm.{{ .Values.datacenter }}.kroger.com"
-
-    kewm-stage:
-      - "kewm-stage.kewm.{{ .Values.datacenter }}.kroger.com"
-      - "*.kewm.{{ .Values.datacenter }}.kroger.com"
-
-    kewm-test:
-      - "kewm-test.kewm.{{ .Values.datacenter }}.kroger.com"
-      - "*.kewm.{{ .Values.datacenter }}.kroger.com"
-
-    kewm-perf:
-      - "kewm-perf.kewm.{{ .Values.datacenter }}.kroger.com"
-      - "*.kewm.{{ .Values.datacenter }}.kroger.com"
 
 deployment:
   httpPort: 8080
