@@ -25,8 +25,13 @@ serviceTargetPort: 8080
 serverAlias: <+serviceVariables.serviceName><+env.variables.environment>.<+env.variables.vanitySuffix>
 
 ingress:
-  hostTemplate: "{{ .Values.name }}-{{ .Values.environment }}.{{ .Values.ingressSuffix }}"
-  secret: <+env.variables.ingressSecret>
+  hostsTemplate:
+    - "{{ .Values.name }}-{{ .Values.environment }}.{{ .Values.ingressSuffix }}"     
+    - "{{ .Values.environment }}.{{ .Values.ingressSuffix }}"                        
+    - "{{ .Values.name }}{{ .Values.environment }}.{{ .Values.vanitySuffix }}"      
+    - "{{ if eq .Values.environment \"prod\" }}kewm.kroger.com{{ end }}"
+    - "{{ if eq .Values.environment \"prod\" }}kewm.cloudha.kroger.com{{ end }}"
+    secret: <+env.variables.ingressSecret>
 
 deployment:
   httpPort: 8080
